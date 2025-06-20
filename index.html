@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Machining Feature Tracker</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <h1>Machining Feature Worksheet</h1>
+
+  <label>Feature Name:</label>
+  <input type="text" placeholder="e.g. Open Contour" oninput="calcFinal()">
+
+  <label>Feature Type:</label>
+  <div class="radio-grid" onchange="calcFinal()">
+    <label><input type="radio" name="featureType" value="Open Planar"> <img src="images/openPlanar.jpg" alt="Open Planar"> Open Planar</label>
+    <label><input type="radio" name="featureType" value="Closed Planar"> <img src="images/closedPlanar.jpg" alt="Closed Planar"> Closed Planar</label>
+    <label><input type="radio" name="featureType" value="Hole"> <img src="images/Hole.jpg" alt="Hole"> Hole</label>
+    <label><input type="radio" name="featureType" value="Open Contour"> <img src="images/Contour.jpg" alt="Open Contour"> Open Contour</label>
+    <label><input type="radio" name="featureType" value="Thread"> <img src="images/Threading.jpg" alt="Thread"> Thread</label>
+    <label><input type="radio" name="featureType" value="3D Surface"> <img src="images/3DSurface.jpg" alt="3D Surface"> 3D Surface</label>
+  </div>
+
+  <label>Feature Size:</label>
+  <select id="featureSize" onchange="calcFinal(); calcAllStrategies();">
+    <option value="small">Small</option>
+    <option value="medium">Medium</option>
+    <option value="large">Large</option>
+    <option value="open">Open</option>
+  </select>
+
+  <label>Required Accuracy Grade:</label>
+  <select id="requiredGrade" onchange="calcFinal()">
+    <option value="0">F(0)</option>
+    <option value="1">D(1)</option>
+    <option value="2">C(2)</option>
+    <option value="3">B(3)</option>
+    <option value="4">A(4)</option>
+    <option value="5">S(5)</option>
+  </select>
+
+  <label>🛡 Shields Present:</label>
+  <input type="number" id="shieldsPresent" min="0" oninput="calcAllStrategies()">
+
+  <div class="section">
+    <div style="display: flex; align-items: center; gap: 1rem;">
+      <h2 style="margin: 0;">Strategy Entries</h2>
+    </div>
+    <div id="strategyContainer" class="strategy-container"></div>
+    <button class="add-strategy" id="addStrategyBtn" onclick="addStrategy()">+ Add Strategy</button>
+  </div>
+
+  <div class="results-fixed" id="resultsSection">
+    <div class="results-flex">
+      <div class="results-left">
+        <div class="results-heading">Results:</div>
+        <span id="resultsPassFail" class="results-passfail">Pass</span>
+      </div>
+      <div class="results-right">
+        <div>Feature Total Time: <span id="resultsTime">0</span></div>
+        <div>Feature Total Accuracy: <span id="resultsAccuracy">0</span></div>
+      </div>
+    </div>
+  </div>
+
+
+  <script>
+    const maxStrategies = 5;
+    const strategyIds = Array.from({ length: maxStrategies }, (_, i) => i + 1);
+
+    function createStrategyBlock(index) {
+      const div = document.createElement('div');
+      div.className = 'strategy-block';
+      div.id = `strategy${index}`;
+      div.innerHTML = `
+        <div class="strategy-header">
+          <label>Strategy ${index}${index === 1 ? ' (required)' : ''}</label>
+          ${index !== 1 ? '<button type="button" class="remove-btn" onclick="hideStrategy(' + index + ')">−</button>' : ''}
+        </div>
+        <label>Strategy Intention:</label>
+        <select id="intention${index}" onchange="toggleStrategyFields(${index}); calcStrategy(${index}); calcFinal();">
+          <option value="Roughing">Roughing</option>
+          <option value="Finishing">Finishing</option>
+          <option value="Special">Special</option>
+        </select>
+        <label>Tool Used:</label>
+        <select id="tool${index}Type" onchange="calcStrategy(${index}); calcFinal();">
+          <option value="Rougher">Rougher</option>
+          <option value="Drill">Drill</option>
+          <option value="Standard">Standard</option>
+        </select>
+        <label>Tool Size:</label>
+        <select id="tool${index}Size" onchange="calcStrategy(${index}); calcFinal();">
+          <option value="small">Small</option>
+          <option value="medium">Medium</option>
+          <option value="large">Large</option>
+        </select>
+        <div id="roughingFields${index}" style="display: none">
+          <label>Strategy Time per Shield</label>
+          <input type="number" id="timePerShield${index}" oninput="calcStrategy(${index})">
+          <label>Strategy Base Time</label>
+          <input type="number" id="baseTime${index}" class="readonly" readonly>
+          <label>Tool Time Modifier (÷2 if Rougher or Drill)</label>
+          <input type="text" id="mod${index}" class="readonly" readonly>
+        </div>
+        <div id="otherFields${index}" style="display: none">
+          <label>Strategy Base Time</label>
+          <input type="number" id="baseTimeOther${index}" oninput="calcStrategy(${index})">
+        </div>
+        <label>Strategy Total Time:</label>
+        <input type="number" id="totalTime${index}" class="readonly" readonly>
+        <label>Accuracy Gained:</label>
+        <input type="number" id="accuracy${index}" oninput="calcFinal()" class="strategy-accuracy">
+        <div id="wearRow${index}" class="wear-row">Tool Wear: <span id="wearValue${index}">0</span></div>
+      `;
+      return div;
+    }
+
+    function initStrategies() {
+      const container = document.getElementById('strategyContainer');
+      strategyIds.forEach((index, i) => {
+        const block = createStrategyBlock(index);
+        if (i === 0) block.classList.add('active');
+        container.appendChild(block);
+        toggleStrategyFields(index);
+      });
+    }
+
+    function addStrategy() {
+      const next = strategyIds.find(i => !document.getElementById(`strategy${i}`).classList.contains('active'));
+      if (next) {
+        document.getElementById(`strategy${next}`).classList.add('active');
+      }
+    }
+
+    function hideStrategy(index) {
+      document.getElementById(`strategy${index}`).classList.remove('active');
+      document.getElementById(`intention${index}`).value = 'Roughing';
+      document.getElementById(`tool${index}Type`).value = 'Standard';
+      document.getElementById(`tool${index}Size`).value = 'small';
+      document.getElementById(`timePerShield${index}`).value = '';
+      document.getElementById(`baseTime${index}`).value = '';
+      document.getElementById(`baseTimeOther${index}`).value = '';
+      document.getElementById(`mod${index}`).value = '';
+      document.getElementById(`totalTime${index}`).value = '';
+      document.getElementById(`accuracy${index}`).value = '';
+      document.getElementById(`wearValue${index}`).textContent = '0';
+      toggleStrategyFields(index);
+      calcFinal();
+    }
+
+    function toggleStrategyFields(index) {
+      const intention = document.getElementById(`intention${index}`).value;
+      const roughingFields = document.getElementById(`roughingFields${index}`);
+      const otherFields = document.getElementById(`otherFields${index}`);
+      if (roughingFields && otherFields) {
+        if (intention === 'Roughing') {
+          roughingFields.style.display = 'block';
+          otherFields.style.display = 'none';
+        } else {
+          roughingFields.style.display = 'none';
+          otherFields.style.display = 'block';
+        }
+      }
+    }
+
+    function calcStrategy(index) {
+      const shields = parseInt(document.getElementById('shieldsPresent').value) || 0;
+      const tool = document.getElementById(`tool${index}Type`).value;
+      const size = document.getElementById(`tool${index}Size`).value;
+      const featureSize = document.getElementById('featureSize').value;
+      const intention = document.getElementById(`intention${index}`).value;
+      let total = 0;
+      let base = 0;
+      let modifier = 1;
+      let modifierText = 'x1';
+
+      if (intention === 'Roughing') {
+        const timePerShield = parseFloat(document.getElementById(`timePerShield${index}`).value) || 0;
+        base = shields * timePerShield;
+        document.getElementById(`baseTime${index}`).value = base;
+
+        if (tool === 'Rougher' || tool === 'Drill') {
+          modifier = 0.5;
+          modifierText = '/2';
+        }
+        document.getElementById(`mod${index}`).value = modifierText;
+        total = base * modifier;
+      } else {
+        base = parseFloat(document.getElementById(`baseTimeOther${index}`).value) || 0;
+        total = base;
+      }
+
+      // Apply feature-tool size modifier
+      let sizeModifier = 1;
+      if (featureSize === 'medium' && size === 'small') sizeModifier = 1.5;
+      else if (featureSize === 'large') {
+        if (size === 'small') sizeModifier = 2;
+        else if (size === 'medium') sizeModifier = 1.5;
+      } else if (featureSize === 'open') {
+        if (size === 'large') sizeModifier = 0.75;
+        else if (size === 'medium') sizeModifier = 0.875;
+      }
+      total = Math.ceil(total * sizeModifier);
+      document.getElementById(`totalTime${index}`).value = total;
+      calcFinal();
+      updateStrategyWear(index); // update inline wear
+    }
+
+    function calcAllStrategies() {
+      strategyIds.forEach(i => {
+        if (document.getElementById(`strategy${i}`).classList.contains('active')) {
+          calcStrategy(i);
+        }
+      });
+    }
+
+    function calcFinal() {
+      let totalTime = 0;
+      let totalAccuracy = 0;
+      strategyIds.forEach(i => {
+        if (document.getElementById(`strategy${i}`).classList.contains('active')) {
+          const time = parseFloat(document.getElementById(`totalTime${i}`).value) || 0;
+          const accuracy = parseFloat(document.getElementById(`accuracy${i}`).value) || 0;
+          totalTime += time;
+          totalAccuracy += accuracy;
+        }
+      });
+      document.getElementById('finalTime').value = totalTime;
+      document.getElementById('finalAccuracy').value = totalAccuracy;
+      const required = parseInt(document.getElementById('requiredGrade').value) || 0;
+      document.getElementById('passFail').value = totalAccuracy >= required ? 'PASS' : 'FAIL';
+      strategyIds.forEach(i => {
+        if (document.getElementById(`strategy${i}`).classList.contains('active')) {
+          updateStrategyWear(i);
+        }
+      });
+      updateResultsSection(totalTime, totalAccuracy, totalAccuracy >= required);
+
+
+    }
+
+    function getStrategyWear(tool, shields, time, intention, size, featureSize) {
+      let shieldsAdjusted = shields;
+      if (intention === 'Roughing') {
+        let sizeScale = 1;
+        if (featureSize === 'medium' && size === 'small') sizeScale = 1.5;
+        else if (featureSize === 'large' || featureSize === 'open') {
+          if (size === 'small') sizeScale = 2;
+          else if (size === 'medium') sizeScale = 1.5;
+        }
+        shieldsAdjusted = Math.ceil(shields * sizeScale);
+      }
+      if (tool === 'Rougher') return shieldsAdjusted;
+      if (tool === 'Drill') return Math.floor(shieldsAdjusted / 2);
+      // Standard/Other tools: time-based wear
+      return Math.ceil(time / 4);
+    }
+
+    function updateStrategyWear(index) {
+      const tool = document.getElementById(`tool${index}Type`).value;
+      const size = document.getElementById(`tool${index}Size`).value;
+      const intention = document.getElementById(`intention${index}`).value;
+      const time = parseFloat(document.getElementById(`totalTime${index}`).value) || 0;
+      const featureSize = document.getElementById('featureSize').value;
+      let shields = (intention === 'Roughing') ? (parseInt(document.getElementById('shieldsPresent').value) || 0) : 0;
+      const wear = getStrategyWear(tool, shields, time, intention, size, featureSize);
+      document.getElementById(`wearValue${index}`).textContent = wear;
+    }
+
+    initStrategies();
+    strategyIds.forEach(i => updateStrategyWear(i));
+    
+    function calcFinal() {
+      let totalTime = 0;
+      let totalAccuracy = 0;
+      strategyIds.forEach(i => {
+        if (document.getElementById(`strategy${i}`).classList.contains('active')) {
+          const time = parseFloat(document.getElementById(`totalTime${i}`).value) || 0;
+          const accuracy = parseFloat(document.getElementById(`accuracy${i}`).value) || 0;
+          totalTime += time;
+          totalAccuracy += accuracy;
+        }
+      });
+      strategyIds.forEach(i => {
+        if (document.getElementById(`strategy${i}`).classList.contains('active')) {
+          updateStrategyWear(i);
+        }
+      });
+      const required = parseInt(document.getElementById('requiredGrade').value) || 0;
+      updateResultsSection(totalTime, totalAccuracy, totalAccuracy >= required);
+    }
+
+    function updateResultsSection(totalTime, totalAccuracy, didPass) {
+      document.getElementById('resultsTime').textContent = totalTime;
+      document.getElementById('resultsAccuracy').textContent = totalAccuracy;
+      const passFail = document.getElementById('resultsPassFail');
+      if (didPass) {
+        passFail.textContent = 'PASS';
+        passFail.classList.add('pass');
+        passFail.classList.remove('fail');
+      } else {
+        passFail.textContent = 'FAIL';
+        passFail.classList.add('fail');
+        passFail.classList.remove('pass');
+      }
+    }
+ 
+ </script>
+</body>
+</html>

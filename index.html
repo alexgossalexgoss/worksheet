@@ -93,7 +93,7 @@
       const div = document.createElement('div');
       div.className = 'strategy-block';
       div.id = `strategy${index}`;
-        div.innerHTML = `
+      div.innerHTML = `
         <div class="strategy-header">
           <label>Strategy ${index}${index === 1 ? ' (required)' : ''}</label>
           ${index !== 1 ? '<button type="button" class="remove-btn" onclick="hideStrategy(' + index + ')">−</button>' : ''}
@@ -143,38 +143,44 @@
           </select>
         </div>
 
+        <!-- ROUGHING FIELDS -->
         <div id="roughingFields${index}" style="display: none">
           <div class="strategy-row">
-            <label for="timePerShield${index}">Strategy Time per Stock 🛡</label>
+            <label for="timePerShield${index}">Strategy Time / Stock 🛡</label>
             <input type="number" id="timePerShield${index}" oninput="calcStrategy(${index}); calcFinal();">
-          </div>
-          <div class="strategy-row">
-            <label for="baseTime${index}">Strategy Base Time</label>
-            <input type="number" id="baseTime${index}" class="readonly" readonly>
-          </div>
-          <div class="strategy-row" style="display:none;">
-            <label>Tool Time Modifier (Based on Tool Type)</label>
-            <input type="text" id="mod${index}" class="readonly" readonly>
           </div>
         </div>
 
+        <!-- FINISHING/SPECIAL FIELDS -->
         <div id="otherFields${index}" style="display: none">
           <div class="strategy-row">
             <label for="baseTimeOther${index}">Strategy Time</label>
-            <input type="number" id="baseTimeOther${index}"
+            <input type="number" id="baseTimeOther${index}" 
               oninput="calcStrategy(${index}); calcFinal();"
               onchange="calcStrategy(${index}); calcFinal();">
           </div>
         </div>
 
+        <!-- This accuracy input is always present, and JS shows/hides it based on intention -->
+        <div class="strategy-row" id="accuracyRow${index}">
+          <label for="accuracy${index}">Strategy Accuracy:</label>
+          <input type="number" id="accuracy${index}" oninput="calcStrategy(${index}); calcFinal();" class="strategy-accuracy">
+        </div>
+
+        <!-- Base Time for Roughing (readonly, always present but only filled if roughing is shown) -->
         <div class="strategy-row">
-          <label for="totalTime${index}">Effective Time (Based on Tool Size):</label>
-          <input type="number" id="totalTime${index}" class="readonly" readonly>
+          <label for="baseTime${index}">Strategy Base Time</label>
+          <input type="number" id="baseTime${index}" class="readonly" readonly>
+        </div>
+
+        <div class="strategy-row" style="display:none;">
+          <label>Tool Time Modifier (Based on Tool Type)</label>
+          <input type="text" id="mod${index}" class="readonly" readonly>
         </div>
 
         <div class="strategy-row">
-          <label for="accuracy${index}">Strategy Accuracy:</label>
-          <input type="number" id="accuracy${index}" oninput="calcStrategy(${index}); calcFinal();" class="strategy-accuracy">
+          <label for="totalTime${index}">Effective Time:</label>
+          <input type="number" id="totalTime${index}" class="readonly" readonly>
         </div>
 
         <div class="strategy-row">
@@ -183,9 +189,9 @@
         </div>
 
         <div id="wearRow${index}" class="wear-row">Tool Wear: <span id="wearValue${index}">0</span></div>
-
       `;
       return div;
+
     }
 
 

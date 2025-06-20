@@ -100,16 +100,18 @@
     .strategy-row label {
       font-weight: bold;
       margin: 0;
-      min-width: 135px; /* visually align with other bold labels */
+      min-width: 235px;  /* Try 220–250px; adjust until your longest label fits on one line */
       font-size: 1.02rem;
       display: block;
+      white-space: nowrap;   /* Force single line, never wrap */
     }
+
 
     .strategy-row img {
       width: 19px;
       height: 19px;
       margin: 0 0.15em 0 0;
-      vertical-align: middle;
+      vertical-align: left;
       /* Optionally add: filter: grayscale(60%); for subtler icons */
     }
 

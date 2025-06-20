@@ -10,7 +10,7 @@
   <h1>Machining Feature Worksheet</h1>
 
   <label>Feature Name:</label>
-  <input type="text" placeholder="e.g. Open Contour" oninput="calcFinal()">
+  <input type="text" placeholder="e.g. Open Contour, a bunch of holes, etc." oninput="calcFinal()">
 
   <label>Feature Type:</label>
   <div class="radio-grid" onchange="calcFinal()">
@@ -73,11 +73,13 @@
       const div = document.createElement('div');
       div.className = 'strategy-block';
       div.id = `strategy${index}`;
-      div.innerHTML = `
+        div.innerHTML = `
         <div class="strategy-header">
-          <label>Strategy ${index}${index === 1 ? ' (required)' : ''}</label>
-          ${index !== 1 ? '<button type="button" class="remove-btn" onclick="hideStrategy(' + index + ')">−</button>' : ''}
+            <label>Strategy ${index}${index === 1 ? ' (required)' : ''}</label>
+            ${index !== 1 ? '<button type="button" class="remove-btn" onclick="hideStrategy(' + index + ')">−</button>' : ''}
         </div>
+        <label>Strategy Name:</label>
+        <input type="text" id="strategyName${index}" placeholder="e.g. Trochoidal Roughing">
         <label>Strategy Intention:</label>
         <select id="intention${index}" onchange="toggleStrategyFields(${index}); calcStrategy(${index}); calcFinal();">
           <option value="Roughing">Roughing</option>

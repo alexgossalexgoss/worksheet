@@ -23,7 +23,7 @@
   </div>
 
   <label>Feature Size:</label>
-  <select id="featureSize" onchange="calcFinal(); calcAllStrategies();">
+  <select id="featureSize" onchange="calcAllStrategies(); calcFinal();">
     <option value="small">Small</option>
     <option value="medium">Medium</option>
     <option value="large">Large</option>
@@ -31,7 +31,7 @@
   </select>
 
   <label>Required Accuracy Grade:</label>
-  <select id="requiredGrade" onchange="calcFinal()">
+  <select id="requiredGrade" onchange="calcFinal(); calcAllStrategies();">
     <option value="0">F(0)</option>
     <option value="1">D(1)</option>
     <option value="2">C(2)</option>
@@ -41,7 +41,7 @@
   </select>
 
   <label>🛡 Stock Present:</label>
-  <input type="number" id="shieldsPresent" min="0" oninput="calcAllStrategies()">
+  <input type="number" id="shieldsPresent" min="0" oninput="calcAllStrategies(); calcFinal();">
 
   <div class="section">
     <div style="display: flex; align-items: center; gap: 1rem;">
@@ -86,8 +86,8 @@
           <option value="Finishing">Finishing</option>
           <option value="Special">Special</option>
         </select>
-        <label>Tool Used:</label>
-        <select id="tool${index}Type" onchange="calcStrategy(${index}); calcFinal();">
+        <label>Tool Type Used:</label>
+        <select id="tool${index}Type" onchange="calcStrategy(${index}); calcFinal(); updateStrategyWear(${index});">
           <option value="Rougher">Rougher</option>
           <option value="Drill">Drill</option>
           <option value="Standard">Standard</option>
@@ -103,17 +103,19 @@
           <input type="number" id="timePerShield${index}" oninput="calcStrategy(${index})">
           <label>Strategy Base Time</label>
           <input type="number" id="baseTime${index}" class="readonly" readonly>
-          <label>Tool Time Modifier (÷2 if Rougher or Drill)</label>
+          <label>Tool Time Modifier (Based on Tool Type)</label>
           <input type="text" id="mod${index}" class="readonly" readonly>
         </div>
         <div id="otherFields${index}" style="display: none">
-          <label>Strategy Base Time</label>
+          <label>Strategy Time</label>
           <input type="number" id="baseTimeOther${index}" oninput="calcStrategy(${index})">
         </div>
-        <label>Strategy Total Time:</label>
+        <label>Effective Time (Based on Tool Size):</label>
         <input type="number" id="totalTime${index}" class="readonly" readonly>
-        <label>Accuracy Gained:</label>
-        <input type="number" id="accuracy${index}" oninput="calcFinal()" class="strategy-accuracy">
+        <label>Strategy Accuracy:</label>
+        <input type="number" id="accuracy${index}" oninput="calcStrategy(${index}); calcFinal();" class="strategy-accuracy">
+        <label>Effective Accuracy:</label>
+        <input type="number" id="effectiveAccuracy${index}" class="readonly" readonly>
         <div id="wearRow${index}" class="wear-row">Tool Wear: <span id="wearValue${index}">0</span></div>
       `;
       return div;
@@ -206,8 +208,19 @@
       }
       total = Math.ceil(total * sizeModifier);
       document.getElementById(`totalTime${index}`).value = total;
-      calcFinal();
-      updateStrategyWear(index); // update inline wear
+
+      // ---- STRATEGY-SPECIFIC ACCURACY CALCULATION ----
+      // Get base accuracy
+      let accuracy = parseFloat(document.getElementById(`accuracy${index}`).value) || 0;
+      let effectiveAccuracy = accuracy;
+      if (intention === 'Finishing' && tool === 'Rougher') {
+        effectiveAccuracy = Math.floor(accuracy * 0.5);
+      }
+      // Set the effectiveAccuracy display
+      document.getElementById(`effectiveAccuracy${index}`).value = effectiveAccuracy;
+
+      // No need to call calcFinal from here -- let it be triggered only by input changes
+      updateStrategyWear(index);
     }
 
     function calcAllStrategies() {
@@ -216,31 +229,7 @@
           calcStrategy(i);
         }
       });
-    }
-
-    function calcFinal() {
-      let totalTime = 0;
-      let totalAccuracy = 0;
-      strategyIds.forEach(i => {
-        if (document.getElementById(`strategy${i}`).classList.contains('active')) {
-          const time = parseFloat(document.getElementById(`totalTime${i}`).value) || 0;
-          const accuracy = parseFloat(document.getElementById(`accuracy${i}`).value) || 0;
-          totalTime += time;
-          totalAccuracy += accuracy;
-        }
-      });
-      document.getElementById('finalTime').value = totalTime;
-      document.getElementById('finalAccuracy').value = totalAccuracy;
-      const required = parseInt(document.getElementById('requiredGrade').value) || 0;
-      document.getElementById('passFail').value = totalAccuracy >= required ? 'PASS' : 'FAIL';
-      strategyIds.forEach(i => {
-        if (document.getElementById(`strategy${i}`).classList.contains('active')) {
-          updateStrategyWear(i);
-        }
-      });
-      updateResultsSection(totalTime, totalAccuracy, totalAccuracy >= required);
-
-
+      calcFinal(); // ensures totals update too
     }
 
     function getStrategyWear(tool, shields, time, intention, size, featureSize) {
@@ -254,11 +243,12 @@
         }
         shieldsAdjusted = Math.ceil(shields * sizeScale);
       }
-      if (tool === 'Rougher') return shieldsAdjusted;
+      if (tool === 'Rougher') return Math.floor(shieldsAdjusted / 2); // <-- changed!
       if (tool === 'Drill') return Math.floor(shieldsAdjusted / 2);
       // Standard/Other tools: time-based wear
       return Math.ceil(time / 4);
     }
+
 
     function updateStrategyWear(index) {
       const tool = document.getElementById(`tool${index}Type`).value;
@@ -280,9 +270,10 @@
       strategyIds.forEach(i => {
         if (document.getElementById(`strategy${i}`).classList.contains('active')) {
           const time = parseFloat(document.getElementById(`totalTime${i}`).value) || 0;
-          const accuracy = parseFloat(document.getElementById(`accuracy${i}`).value) || 0;
+          const effAccInput = document.getElementById(`effectiveAccuracy${i}`);
+          let effectiveAccuracy = effAccInput ? parseFloat(effAccInput.value) || 0 : 0;
           totalTime += time;
-          totalAccuracy += accuracy;
+          totalAccuracy += effectiveAccuracy;
         }
       });
       strategyIds.forEach(i => {

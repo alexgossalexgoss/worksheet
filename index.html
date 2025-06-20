@@ -22,26 +22,46 @@
     <label><input type="radio" name="featureType" value="3D Surface"> <img src="images/3DSurface.jpg" alt="3D Surface"> 3D Surface</label>
   </div>
 
-  <label>Feature Size:</label>
-  <select id="featureSize" onchange="calcAllStrategies(); calcFinal();">
-    <option value="small">Small</option>
-    <option value="medium">Medium</option>
-    <option value="large">Large</option>
-    <option value="open">Open</option>
-  </select>
+  <div class="strategy-row">
+    <label for="materialType">Material Type:</label>
+    <select id="materialType" onchange="calcAllStrategies();">
+      <option value="Plastic">Plastic</option>
+      <option value="Aluminum">Aluminum</option>
+      <option value="Brass">Brass</option>
+      <option value="Carbon Steel">Carbon Steel</option>
+      <option value="Stainless Steel">Stainless Steel</option>
+      <option value="Titanium">Titanium</option>
+      <option value="Inconel">Inconel</option>
+    </select>
+  </div>
 
-  <label>Required Accuracy Grade:</label>
-  <select id="requiredGrade" onchange="calcFinal(); calcAllStrategies();">
-    <option value="0">F(0)</option>
-    <option value="1">D(1)</option>
-    <option value="2">C(2)</option>
-    <option value="3">B(3)</option>
-    <option value="4">A(4)</option>
-    <option value="5">S(5)</option>
-  </select>
+  <div class="strategy-row">
+    <label for="featureSize">Feature Size:</label>
+    <select id="featureSize" onchange="calcAllStrategies(); calcFinal();">
+      <option value="small">Small</option>
+      <option value="medium">Medium</option>
+      <option value="large">Large</option>
+      <option value="open">Open</option>
+    </select>
+  </div>
 
-  <label>🛡 Stock Present:</label>
-  <input type="number" id="shieldsPresent" min="0" oninput="calcAllStrategies(); calcFinal();">
+  <div class="strategy-row">
+    <label for="requiredGrade">Required Accuracy Grade:</label>
+    <select id="requiredGrade" onchange="calcFinal(); calcAllStrategies();">
+      <option value="0">F(0)</option>
+      <option value="1">D(1)</option>
+      <option value="2">C(2)</option>
+      <option value="3">B(3)</option>
+      <option value="4">A(4)</option>
+      <option value="5">S(5)</option>
+    </select>
+  </div>
+
+  <div class="strategy-row">
+    <label for="shieldsPresent">Stock🛡 Present:</label>
+    <input type="number" id="shieldsPresent" min="0" oninput="calcAllStrategies(); calcFinal();">
+  </div>
+
 
   <div class="section">
     <div style="display: flex; align-items: center; gap: 1rem;">
@@ -75,50 +95,108 @@
       div.id = `strategy${index}`;
         div.innerHTML = `
         <div class="strategy-header">
-            <label>Strategy ${index}${index === 1 ? ' (required)' : ''}</label>
-            ${index !== 1 ? '<button type="button" class="remove-btn" onclick="hideStrategy(' + index + ')">−</button>' : ''}
+          <label>Strategy ${index}${index === 1 ? ' (required)' : ''}</label>
+          ${index !== 1 ? '<button type="button" class="remove-btn" onclick="hideStrategy(' + index + ')">−</button>' : ''}
         </div>
-        <label>Strategy Name:</label>
-        <input type="text" id="strategyName${index}" placeholder="e.g. Trochoidal Roughing">
-        <label>Strategy Intention:</label>
-        <select id="intention${index}" onchange="toggleStrategyFields(${index}); calcStrategy(${index}); calcFinal();">
-          <option value="Roughing">Roughing</option>
-          <option value="Finishing">Finishing</option>
-          <option value="Special">Special</option>
-        </select>
-        <label>Tool Type Used:</label>
-        <select id="tool${index}Type" onchange="calcStrategy(${index}); calcFinal(); updateStrategyWear(${index});">
-          <option value="Rougher">Rougher</option>
-          <option value="Drill">Drill</option>
-          <option value="Standard">Standard</option>
-        </select>
-        <label>Tool Size:</label>
-        <select id="tool${index}Size" onchange="calcStrategy(${index}); calcFinal();">
-          <option value="small">Small</option>
-          <option value="medium">Medium</option>
-          <option value="large">Large</option>
-        </select>
+
+        <div class="strategy-row">
+          <label for="strategyName${index}">Strategy Name:</label>
+          <input type="text" id="strategyName${index}" placeholder="e.g. Trochoidal Roughing">
+        </div>
+
+        <div class="strategy-row">
+          <label for="intention${index}">Strategy Intention:</label>
+          <img id="intentionIcon${index}" src="" alt="intention icon">
+          <select id="intention${index}"
+            onchange="toggleStrategyFields(${index}); calcStrategy(${index}); calcFinal(); updateStrategyIcon(${index});">
+            <option value="Roughing">Roughing</option>
+            <option value="Finishing">Finishing</option>
+            <option value="Special">Special</option>
+          </select>
+        </div>
+
+        <div class="strategy-row">
+          <label for="tool${index}Type">Tool Type Used:</label>
+          <select id="tool${index}Type" onchange="calcStrategy(${index}); calcFinal(); updateStrategyWear(${index});">
+            <option value="Rougher">Rougher</option>
+            <option value="Drill">Drill</option>
+            <option value="Standard">Standard</option>
+          </select>
+        </div>
+
+        <div class="strategy-row">
+          <label for="toolFlute${index}">Tool Flute Count:</label>
+          <select id="toolFlute${index}" onchange="calcStrategy(${index}); calcFinal();">
+            <option value="1">1 Flute</option>
+            <option value="3">3 Flute</option>
+            <option value="5">5 Flute</option>
+            <option value="9">9 Flute</option>
+          </select>
+        </div>
+
+        <div class="strategy-row">
+          <label for="tool${index}Size">Tool Size:</label>
+          <select id="tool${index}Size" onchange="calcStrategy(${index}); calcFinal();">
+            <option value="small">Small</option>
+            <option value="medium">Medium</option>
+            <option value="large">Large</option>
+          </select>
+        </div>
+
         <div id="roughingFields${index}" style="display: none">
-          <label>Strategy Time per Stock</label>
-          <input type="number" id="timePerShield${index}" oninput="calcStrategy(${index})">
-          <label>Strategy Base Time</label>
-          <input type="number" id="baseTime${index}" class="readonly" readonly>
-          <label>Tool Time Modifier (Based on Tool Type)</label>
-          <input type="text" id="mod${index}" class="readonly" readonly>
+          <div class="strategy-row">
+            <label for="timePerShield${index}">Strategy Time per Stock 🛡</label>
+            <input type="number" id="timePerShield${index}" oninput="calcStrategy(${index}); calcFinal();">
+          </div>
+          <div class="strategy-row">
+            <label for="baseTime${index}">Strategy Base Time</label>
+            <input type="number" id="baseTime${index}" class="readonly" readonly>
+          </div>
+          <div class="strategy-row" style="display:none;">
+            <label>Tool Time Modifier (Based on Tool Type)</label>
+            <input type="text" id="mod${index}" class="readonly" readonly>
+          </div>
         </div>
+
         <div id="otherFields${index}" style="display: none">
-          <label>Strategy Time</label>
-          <input type="number" id="baseTimeOther${index}" oninput="calcStrategy(${index})">
+          <div class="strategy-row">
+            <label for="baseTimeOther${index}">Strategy Time</label>
+            <input type="number" id="baseTimeOther${index}"
+              oninput="calcStrategy(${index}); calcFinal();"
+              onchange="calcStrategy(${index}); calcFinal();">
+          </div>
         </div>
-        <label>Effective Time (Based on Tool Size):</label>
-        <input type="number" id="totalTime${index}" class="readonly" readonly>
-        <label>Strategy Accuracy:</label>
-        <input type="number" id="accuracy${index}" oninput="calcStrategy(${index}); calcFinal();" class="strategy-accuracy">
-        <label>Effective Accuracy:</label>
-        <input type="number" id="effectiveAccuracy${index}" class="readonly" readonly>
+
+        <div class="strategy-row">
+          <label for="totalTime${index}">Effective Time (Based on Tool Size):</label>
+          <input type="number" id="totalTime${index}" class="readonly" readonly>
+        </div>
+
+        <div class="strategy-row">
+          <label for="accuracy${index}">Strategy Accuracy:</label>
+          <input type="number" id="accuracy${index}" oninput="calcStrategy(${index}); calcFinal();" class="strategy-accuracy">
+        </div>
+
+        <div class="strategy-row">
+          <label for="effectiveAccuracy${index}">Effective Accuracy:</label>
+          <input type="number" id="effectiveAccuracy${index}" class="readonly" readonly>
+        </div>
+
         <div id="wearRow${index}" class="wear-row">Tool Wear: <span id="wearValue${index}">0</span></div>
+
       `;
       return div;
+    }
+
+
+    function updateStrategyIcon(index) {
+      const intention = document.getElementById(`intention${index}`).value;
+      const icon = document.getElementById(`intentionIcon${index}`);
+      let src = "images/roughing.png";
+      if (intention === "Finishing") src = "images/Intent_Finishing.jpg";
+      else if (intention === "Special") src = "images/Intent_Special.jpg";
+      else src = "images/Intent_Roughing.jpg";
+      icon.src = src;
     }
 
     function initStrategies() {
@@ -128,15 +206,21 @@
         if (i === 0) block.classList.add('active');
         container.appendChild(block);
         toggleStrategyFields(index);
+        updateStrategyIcon(index);
       });
+      calcAllStrategies(); // <-- ensures all values populate on load
     }
+
 
     function addStrategy() {
       const next = strategyIds.find(i => !document.getElementById(`strategy${i}`).classList.contains('active'));
       if (next) {
         document.getElementById(`strategy${next}`).classList.add('active');
+        
+        calcAllStrategies(); // <-- updates after add
       }
     }
+
 
     function hideStrategy(index) {
       document.getElementById(`strategy${index}`).classList.remove('active');
@@ -146,13 +230,13 @@
       document.getElementById(`timePerShield${index}`).value = '';
       document.getElementById(`baseTime${index}`).value = '';
       document.getElementById(`baseTimeOther${index}`).value = '';
-      document.getElementById(`mod${index}`).value = '';
       document.getElementById(`totalTime${index}`).value = '';
       document.getElementById(`accuracy${index}`).value = '';
       document.getElementById(`wearValue${index}`).textContent = '0';
       toggleStrategyFields(index);
-      calcFinal();
+      calcAllStrategies(); // <-- updates after hide
     }
+
 
     function toggleStrategyFields(index) {
       const intention = document.getElementById(`intention${index}`).value;
@@ -175,16 +259,19 @@
       const size = document.getElementById(`tool${index}Size`).value;
       const featureSize = document.getElementById('featureSize').value;
       const intention = document.getElementById(`intention${index}`).value;
+      const flute = parseInt(document.getElementById(`toolFlute${index}`).value) || 1;
+      const material = document.getElementById('materialType').value;
+
       let total = 0;
       let base = 0;
       let modifier = 1;
       let modifierText = 'x1';
 
+      // 1. Calculate base time
       if (intention === 'Roughing') {
         const timePerShield = parseFloat(document.getElementById(`timePerShield${index}`).value) || 0;
         base = shields * timePerShield;
         document.getElementById(`baseTime${index}`).value = base;
-
         if (tool === 'Rougher' || tool === 'Drill') {
           modifier = 0.5;
           modifierText = '/2';
@@ -196,7 +283,7 @@
         total = base;
       }
 
-      // Apply feature-tool size modifier
+      // 2. Feature-tool size modifier
       let sizeModifier = 1;
       if (featureSize === 'medium' && size === 'small') sizeModifier = 1.5;
       else if (featureSize === 'large') {
@@ -206,20 +293,20 @@
         if (size === 'large') sizeModifier = 0.75;
         else if (size === 'medium') sizeModifier = 0.875;
       }
-      total = Math.ceil(total * sizeModifier);
+      total = total * sizeModifier;
+
+
+      // 4. Update output
       document.getElementById(`totalTime${index}`).value = total;
 
-      // ---- STRATEGY-SPECIFIC ACCURACY CALCULATION ----
-      // Get base accuracy
+      // 5. Effective Accuracy
       let accuracy = parseFloat(document.getElementById(`accuracy${index}`).value) || 0;
       let effectiveAccuracy = accuracy;
       if (intention === 'Finishing' && tool === 'Rougher') {
         effectiveAccuracy = Math.floor(accuracy * 0.5);
       }
-      // Set the effectiveAccuracy display
       document.getElementById(`effectiveAccuracy${index}`).value = effectiveAccuracy;
 
-      // No need to call calcFinal from here -- let it be triggered only by input changes
       updateStrategyWear(index);
     }
 
@@ -232,7 +319,8 @@
       calcFinal(); // ensures totals update too
     }
 
-    function getStrategyWear(tool, shields, time, intention, size, featureSize) {
+
+    function getStrategyWear(tool, shields, time, intention, size, featureSize, flute, material) {
       let shieldsAdjusted = shields;
       if (intention === 'Roughing') {
         let sizeScale = 1;
@@ -243,12 +331,46 @@
         }
         shieldsAdjusted = Math.ceil(shields * sizeScale);
       }
-      if (tool === 'Rougher') return Math.floor(shieldsAdjusted / 2); // <-- changed!
-      if (tool === 'Drill') return Math.floor(shieldsAdjusted / 2);
-      // Standard/Other tools: time-based wear
-      return Math.ceil(time / 4);
+      let baseWear = 0;
+      if (intention === 'Roughing' && (tool === 'Rougher' || tool === 'Drill')) {
+        baseWear = Math.floor(shieldsAdjusted / 2);
+      } else {
+        baseWear = Math.ceil(time / 4);
+      }
+
+
+      let fluteWearMod = 1;
+      if (flute === 1) {
+        if (material === 'Plastic') fluteWearMod = 0.8;
+        else if (material === 'Aluminum' || material === 'Brass') fluteWearMod = 1.1;
+        else if (material === 'Carbon Steel' || material === 'Stainless Steel') fluteWearMod = 1.2;
+        else fluteWearMod = 1.3; // exotics worst for 1 flute
+      } else if (flute === 3) {
+        if (material === 'Aluminum' || material === 'Brass') fluteWearMod = 0.9;
+        else if (material === 'Plastic') fluteWearMod = 1;
+        else if (material === 'Carbon Steel' || material === 'Stainless Steel') fluteWearMod = 1.1;
+        else fluteWearMod = 1.2;
+      } else if (flute === 5) {
+        if (material === 'Carbon Steel' || material === 'Stainless Steel') fluteWearMod = 0.8;
+        else if (material === 'Titanium' || material === 'Inconel') fluteWearMod = 0.9;
+        else if (material === 'Aluminum' || material === 'Brass') fluteWearMod = 1.1;
+        else if (material === 'Plastic') fluteWearMod = 1.2;
+        else fluteWearMod = 1.2;
+      } else if (flute === 9) {
+        if (material === 'Titanium' || material === 'Inconel') fluteWearMod = 0.7;
+        else if (material === 'Carbon Steel' || material === 'Stainless Steel') fluteWearMod = 0.9;
+        else if (material === 'Aluminum' || material === 'Brass') fluteWearMod = 1.2;
+        else if (material === 'Plastic') fluteWearMod = 1.3;
+        else fluteWearMod = 1.1;
+      } else {
+        fluteWearMod = 1.1; // fallback penalty
+      }
+      const wear = Math.max(1, Math.round(baseWear * fluteWearMod));
+
+      return wear;
     }
 
+  
 
     function updateStrategyWear(index) {
       const tool = document.getElementById(`tool${index}Type`).value;
@@ -256,8 +378,10 @@
       const intention = document.getElementById(`intention${index}`).value;
       const time = parseFloat(document.getElementById(`totalTime${index}`).value) || 0;
       const featureSize = document.getElementById('featureSize').value;
+      const flute = parseInt(document.getElementById(`toolFlute${index}`).value) || 1;
+      const material = document.getElementById('materialType').value;
       let shields = (intention === 'Roughing') ? (parseInt(document.getElementById('shieldsPresent').value) || 0) : 0;
-      const wear = getStrategyWear(tool, shields, time, intention, size, featureSize);
+      const wear = getStrategyWear(tool, shields, time, intention, size, featureSize, flute, material);
       document.getElementById(`wearValue${index}`).textContent = wear;
     }
 

@@ -88,6 +88,39 @@
     .strategy-header label { margin: 0; font-size: 1.09rem; }
     .strategy-block button.remove-btn { margin: 0; font-size: 1.2rem; }
     .add-strategy { margin-top: 1rem; width: 100%; font-size: 1.1rem; padding: 0.5rem 0; }
+    
+    .strategy-row {
+      display: flex;
+      align-items: center;
+      gap: 0.5em;
+      margin-top: 1rem;
+      margin-bottom: 0.3em;
+    }
+
+    .strategy-row label {
+      font-weight: bold;
+      margin: 0;
+      min-width: 135px; /* visually align with other bold labels */
+      font-size: 1.02rem;
+      display: block;
+    }
+
+    .strategy-row img {
+      width: 19px;
+      height: 19px;
+      margin: 0 0.15em 0 0;
+      vertical-align: middle;
+      /* Optionally add: filter: grayscale(60%); for subtler icons */
+    }
+
+    .strategy-row select {
+      flex: 1;
+      min-width: 110px;
+      font-size: 1rem;
+      margin: 0;
+    }
+
+
     .wear-row {
       display: block;
       width: fit-content;
@@ -183,4 +216,9 @@
         padding: 0;
       }
       .results-right { align-items: flex-start; }
+    }
+    .eff-accuracy-label {
+    margin-left: 0.5rem;
+    font-size: 0.97em;
+    color: #999;
     }

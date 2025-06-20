@@ -40,7 +40,7 @@
     <option value="5">S(5)</option>
   </select>
 
-  <label>🛡 Shields Present:</label>
+  <label>🛡 Stock Present:</label>
   <input type="number" id="shieldsPresent" min="0" oninput="calcAllStrategies()">
 
   <div class="section">
@@ -99,7 +99,7 @@
           <option value="large">Large</option>
         </select>
         <div id="roughingFields${index}" style="display: none">
-          <label>Strategy Time per Shield</label>
+          <label>Strategy Time per Stock</label>
           <input type="number" id="timePerShield${index}" oninput="calcStrategy(${index})">
           <label>Strategy Base Time</label>
           <input type="number" id="baseTime${index}" class="readonly" readonly>

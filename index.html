@@ -105,8 +105,10 @@
         </div>
 
         <div class="strategy-row">
-          <label for="intention${index}">Strategy Intention:</label>
-          <img id="intentionIcon${index}" src="" alt="intention icon">
+          <label for="intention${index}">
+            Strategy Intention:
+            <img id="intentionIcon${index}" src="" alt="intention icon" style="vertical-align: middle; margin-left: 0.2em;">
+          </label>
           <select id="intention${index}"
             onchange="toggleStrategyFields(${index}); calcStrategy(${index}); calcFinal(); updateStrategyIcon(${index});">
             <option value="Roughing">Roughing</option>
@@ -114,6 +116,7 @@
             <option value="Special">Special</option>
           </select>
         </div>
+
 
         <div class="strategy-row">
           <label for="tool${index}Type">Tool Type Used:</label>
